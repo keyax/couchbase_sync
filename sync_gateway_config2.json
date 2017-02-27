@@ -1,0 +1,19 @@
+{
+  "interface": "0.0.0.0:4984",
+  "adminInterface": "0.0.0.0:4985",
+  "log": ["CRUD+", "REST+", "Changes+", "Attach+"],
+  "pretty": true,
+  "databases": {
+    "mydb": {
+      "server": "http://localhost:8091",
+      "bucket": "default",
+      "users": {
+        "GUEST": {"disabled": false }
+      },
+      "sync":
+        `function(doc, oldDoc) {
+          channel(doc.channels);
+      }`
+    }
+  }
+}
