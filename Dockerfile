@@ -8,8 +8,6 @@ LABEL keyax.vendor "Keyax"
 LABEL keyax.app "Sync Gateway 1.3.1 for Couchbase 4.5.0"
 LABEL keyax.app.ver "2.1"
 
-# configure
-ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
 # ENV PATH $PATH:/opt/couchbase-sync-gateway/bin   Centos
 
 # RUN mkdir /opt/couchbase-sync-gateway/bin
@@ -25,11 +23,16 @@ ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
 #    yum clean all
 
 # Install Sync Gateway
-RUN set -x && \
-    wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb && \
-    dpkg -i couchbase-sync-gateway-community_1.3.1-16_x86_64.deb && \
-    rm couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
+# RUN set -x && \
+#     wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb && \
+#    dpkg -i couchbase-sync-gateway-community_1.3.1-16_x86_64.deb && \
+#    rm couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
+RUN wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.1.1/couchbase-sync-gateway-community_1.1.1-10_x86_64.deb -O package.deb && \
+    dpkg -i package.deb && \
+    rm package.deb
 
+# configure
+ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
 
 # copy the default config into the container
 COPY sync_gateway_config.json /etc/sync_gateway/config.json
