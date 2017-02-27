@@ -2,7 +2,7 @@ upstream sync_gateway {
     server 127.0.0.1:4984;
 }
 # HTTP server
-#
+#   
 server {
     listen 80;
     server_name  172.17.0.4;
