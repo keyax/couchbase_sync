@@ -5,7 +5,7 @@ upstream sync_gateway {
 #
 server {
     listen 80;
-    server_name  myservice.example.org;
+    server_name  172.17.0.4;
     client_max_body_size 20m;
     location / {
         proxy_pass              http://sync_gateway;
