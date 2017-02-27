@@ -14,7 +14,7 @@ ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
 
 # RUN mkdir /opt/couchbase-sync-gateway/bin
 # Create directory where the default config stores memory snapshots to disk
-RUN sudo mkdir /opt/couchbase-sync-gateway/data
+# RUN sudo mkdir /opt/couchbase-sync-gateway/data
 
 
 # Install dependencies:
@@ -42,4 +42,4 @@ CMD ["/etc/sync_gateway/config.json"]
 
 # Expose ports
 #  port 4984: public port
-EXPOSE 4984
+EXPOSE 4984 4985
