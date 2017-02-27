@@ -8,13 +8,16 @@ LABEL keyax.vendor "Keyax"
 LABEL keyax.app "Sync Gateway 1.3.1 for Couchbase 4.5.0"
 LABEL keyax.app.ver "2.1"
 
+ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
+
+
 # Create directory where the default config stores memory snapshots to disk
-# RUN mkdir /opt/couchbase-sync-gateway/bin
+RUN mkdir /opt/couchbase-sync-gateway/bin
 # Create directory where the default config stores memory snapshots to disk
-# RUN mkdir /opt/couchbase-sync-gateway/data
+RUN mkdir /opt/couchbase-sync-gateway/data
+
 # ENV PATH $PATH:/opt/couchbase-sync-gateway/bin
 # configure
-ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
 
 # Install dependencies:
 #  wget: for downloading Sync Gateway package installer
