@@ -1,24 +1,14 @@
 {
-	"log": ["HTTP+"],
+	"log": ["*"],
 	"interface": ":4984",
+  "adminInterface": "0.0.0.0:4985",
 	"databases": {
 		"db": {
-			"server": "http://172.17.0.3walrus:/opt/couchbase-sync-gateway/data",
+			"server": "http://172.17.0.3:8091",
+      "bucket": "default",
 			"users": {
 				"GUEST": {"disabled": false, "admin_channels": ["*"] }
 			}
 		}
 	}
-}
-
-
-{
-    "log": ["*"],
-    "databases": {
-        "db": {
-            "server": "http://localhost:8091",
-            "bucket": "mobile_bucket",
-            "users": { "GUEST": { "disabled": false, "admin_channels": ["*"] } }
-        }
-    }
 }
