@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install --assume-yes --no-install-recommends nginx
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 # this forces "apt-get update" in dependent images, which is also good
 
-COPY sites_available /etc/nginx/
+COPY ./sites_available /etc/nginx/
 
 # Install Sync Gateway
 # RUN set -x && \
