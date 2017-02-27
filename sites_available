@@ -8,7 +8,7 @@ server {
     server_name  172.17.0.4;
     client_max_body_size 20m;
     location / {
-        proxy_pass              http://sync_gateway;
+        proxy_pass              http://172.17.0.2;
         proxy_pass_header       Accept;
         proxy_pass_header       Server;
         proxy_http_version      1.1;
