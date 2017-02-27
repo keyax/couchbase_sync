@@ -8,14 +8,16 @@ LABEL keyax.vendor "Keyax"
 LABEL keyax.app "Sync Gateway 1.3.1 for Couchbase 4.5.0"
 LABEL keyax.app.ver "2.1"
 
-# ENV PATH $PATH:/opt/couchbase-sync-gateway/bin   Centos
+RUN apt-get update && apt-get install --assume-yes --no-install-recommends nginx && \
+# remove packages installed by other packages and no longer needed purge configs
+    apt-get autoremove --purge --assume-yes && \
+#   remove the aptitude cache in /var/cache/apt/archives frees 0MB
+    apt-get clean && \
+# delete 27MB all the apt list files since they're big and get stale quickly
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# this forces "apt-get update" in dependent images, which is also good
 
-# Install dependencies:
-#  wget: for downloading Sync Gateway package installer
-# RUN yum -y update && \
-#    yum install -y \
-#    wget && \
-#    yum clean all
+COPY sites_available /etc/nginx/
 
 # Install Sync Gateway
 # RUN set -x && \
@@ -28,7 +30,6 @@ RUN wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.1.1/
 
 # Create directory where the default config stores memory snapshots to disk
 RUN mkdir /opt/couchbase-sync-gateway/data
-
 
 # configure
 ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
@@ -44,4 +45,4 @@ CMD ["/etc/sync_gateway/config.json"]
 
 # Expose ports
 #  port 4984: public port
-EXPOSE 4984 4985
+EXPOSE 80 443 4984 4985
