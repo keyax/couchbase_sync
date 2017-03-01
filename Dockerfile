@@ -1,4 +1,4 @@
-FROM keyax/ubuntu_lts
+FROM keyax/ubuntu_core
 
 # MAINTAINER Couchbase Docker Team <docker@couchbase.com>
 LABEL maintainer "yones.lebady AT gmail.com"
