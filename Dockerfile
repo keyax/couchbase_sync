@@ -44,11 +44,13 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 ## CMD ["nginx", "-g", "daemon off;"]
 
 COPY ./sites_available /etc/nginx/
-
+#91msync_gateway: unrecognized service
+#dpkg: error processing package couchbase-sync-gateway (--install):
+#      subprocess installed post-installation script returned error exit status 1
 # Install Sync Gateway set -x &&   \
  RUN set -x && \
      wget -N -O package.deb http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.0/couchbase-sync-gateway-community_1.3.0-274_x86_64.deb && \
-     dpkg -i couchbase-sync-gateway package.deb && \
+     dpkg -i package.deb && \
      rm package.deb
 # RUN apt-get update && \
 # RUN wget https://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
