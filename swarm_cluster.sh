@@ -9,7 +9,7 @@ if [ $? -ne 0 ]; then
   docker swarm init > /dev/null 2>&1
 fi
 
-# get join token
+# get join token  
 SWARM_TOKEN=$(docker swarm join-token -q worker)
 
 # get Swarm master IP (Docker for Mac xhyve VM IP)
