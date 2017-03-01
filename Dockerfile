@@ -51,7 +51,8 @@ COPY ./sites_available /etc/nginx/
 #   rm package.deb
 RUN wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.2.1/couchbase-sync-gateway-community_1.2.1-4_x86_64.deb -O package.deb && \
     dpkg -i package.deb && \
-    service sync_gateway start && \    
+    sudo apt-get install -f && \
+    service sync_gateway start && \
     rm package.deb
 
 # Create directory where the default config stores memory snapshots to disk
