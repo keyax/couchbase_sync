@@ -45,8 +45,6 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 
 COPY ./sites_available /etc/nginx/
 
-
-
 # Install Sync Gateway set -x &&   \
 RUN wget -N -O package.deb http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.0/couchbase-sync-gateway-community_1.3.0-274_x86_64.deb && \
    dpkg -i couchbase-sync-gateway package.deb && \
