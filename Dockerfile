@@ -1,4 +1,4 @@
-FROM keyax/ubuntu_core
+FROM keyax/ubuntu_lts
 
 # MAINTAINER Couchbase Docker Team <docker@couchbase.com>
 LABEL maintainer "yones.lebady AT gmail.com"
@@ -46,12 +46,12 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 COPY ./sites_available /etc/nginx/
 
 # Install Sync Gateway set -x &&   \
-RUN wget -N -O package.deb http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.0/couchbase-sync-gateway-community_1.3.0-274_x86_64.deb && \
-   dpkg -i couchbase-sync-gateway package.deb && \
+# RUN wget -N -O package.deb http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.0/couchbase-sync-gateway-community_1.3.0-274_x86_64.deb && \
+#   dpkg -i couchbase-sync-gateway package.deb && \
+#   rm package.deb
+RUN wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.1.1/couchbase-sync-gateway-community_1.1.1-10_x86_64.deb -O package.deb && \
+   dpkg -i package.deb && \
    rm package.deb
-# RUN wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.1.1/couchbase-sync-gateway-community_1.1.1-10_x86_64.deb -O package.deb && \
-#     dpkg -i package.deb && \
-#     rm package.deb .....
 
 # Create directory where the default config stores memory snapshots to disk
 RUN mkdir /opt/couchbase-sync-gateway/data
