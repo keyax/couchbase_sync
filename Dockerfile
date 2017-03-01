@@ -49,11 +49,17 @@ COPY ./sites_available /etc/nginx/
 # RUN wget -N -O package.deb http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.0/couchbase-sync-gateway-community_1.3.0-274_x86_64.deb && \
 #   dpkg -i couchbase-sync-gateway package.deb && \
 #   rm package.deb
-RUN wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.2.1/couchbase-sync-gateway-community_1.2.1-4_x86_64.deb -O package.deb && \
-    dpkg -i package.deb && \
-    sudo apt-get install -f && \
-    service sync_gateway start && \
-    rm package.deb
+# RUN apt-get update && \
+RUN wget https://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
+RUN dpkg -i couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
+RUN service sync_gateway start
+#    wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.2.1/couchbase-sync-gateway-community_1.2.1-4_x86_64.deb -O package.deb && \
+#    dpkg -i package.deb && \
+#    sudo apt-get install -f && \
+#    service sync_gateway start && \
+#    rm package.deb && \
+#    rm -rf /var/lib/apt/lists/*
+
 
 # Create directory where the default config stores memory snapshots to disk
 RUN mkdir /opt/couchbase-sync-gateway/data
