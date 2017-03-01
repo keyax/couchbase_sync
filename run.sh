@@ -25,4 +25,6 @@ if [ ! -z $COUCHBASE_HOST ]; then
 	sleep 40
 fi
 
+exec nginx -g daemon off
+
 exec sync_gateway /config.json
