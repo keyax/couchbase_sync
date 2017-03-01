@@ -48,9 +48,9 @@ COPY ./sites_available /etc/nginx/
 
 
 # Install Sync Gateway set -x && \
-RUN wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb -O syncgate.deb && \
-   dpkg -i syncgate.deb && \
-   rm syncgate.deb
+RUN wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb -O package.deb && \
+   dpkg -i package.deb && \
+   rm package.deb
 # RUN wget -q http://packages.couchbase.com/releases/couchbase-sync-gateway/1.1.1/couchbase-sync-gateway-community_1.1.1-10_x86_64.deb -O package.deb && \
 #     dpkg -i package.deb && \
 #     rm package.deb
