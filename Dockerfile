@@ -54,23 +54,32 @@ ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
 
 RUN apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
-          git \
-          build-essential && \
-    cd /home/repo && \
-    wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz && \
-    tar -xvf go1.8.linux-amd64.tar.gz && \
-    mv ./go /usr/local/ && \
-    echo export GOROOT=/usr/local/go >> ~/.profile && \
-    echo export GOPATH=/home/repo >> ~/.profile && \
-    echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH >> ~/.profile && cat ~/.profile && \
-    go version && go env && \
-#     git init && \
-     # git add && git commit -m "first commit" && \
-#     git clone origin git@github.com:couchbase/sync-gateway.git && \
-    go get -u -t git@github.com:couchbase/sync-gateway && ls && \
+              build-essential make cmake scons curl git \
+              ruby autoconf automake autoconf-archive \
+              gettext libtool flex bison \
+              libbz2-dev libcurl4-openssl-dev \
+              libexpat-dev libncurses-dev && \
+              wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz && \
+              tar -xvf go1.8.linux-amd64.tar.gz && \
+              mv ./go /usr/local/ && \
+              echo export GOROOT=/usr/local/go >> ~/.profile && \
+              echo export GOPATH=/home/repo >> ~/.profile && \
+              echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH >> ~/.profile && cat ~/.profile && \
+              go version && go env && \
+              go get -u -t git@github.com:couchbase/sync-gateway && ls && \
+
+
+    brew install repo && \
+    mkdir ~/sync_gateway; cd ~/sync_gateway && \
+    wget https://raw.githubusercontent.com/couchbase/sync_gateway/master/bootstrap.sh && \
+    chmod +x bootstrap.sh && \
     ./bootstrap.sh && \
     ./build.sh && \
     ./test.sh
+
+#     git init && \
+#     git add && git commit -m "first commit" && \
+#     git clone origin git@github.com:couchbase/sync-gateway.git && \
 ##    apt-get autoremove build-essential --assume-yes && \
 #   remove dependent packages
 ##    apt-get purge build-essential && \
