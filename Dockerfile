@@ -59,6 +59,9 @@ RUN apt-get update && \
               gettext libtool flex bison \
               libbz2-dev libcurl4-openssl-dev \
               libexpat-dev libncurses-dev && \
+              ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
+              PATH="$HOME/.linuxbrew/bin:$PATH"
+              echo 'export PATH="$HOME/.linuxbrew/bin:$PATH"' >>~/.bash_profile
               wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz && \
               tar -xvf go1.8.linux-amd64.tar.gz && \
               mv ./go /usr/local/ && \
@@ -68,6 +71,7 @@ RUN apt-get update && \
               go version && go env
 #              git clone init && \
 #              go get -u -t git@github.com:couchbase/sync-gateway.git && ls
+# Building from Source
 RUN brew install repo && \
     mkdir ~/sync_gateway; cd ~/sync_gateway && \
     wget https://raw.githubusercontent.com/couchbase/sync_gateway/master/bootstrap.sh && \
