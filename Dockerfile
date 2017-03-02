@@ -58,8 +58,8 @@ WORKDIR /home/repo
 ENV GOPATH /home/repo
 ENV GOROOT /usr/local/go
 ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
-
-RUN apt-get update && \
+RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && \
+    apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests --no-triggers -y \
               build-essential make cmake scons curl git \
               ruby autoconf automake autoconf-archive \
@@ -76,6 +76,7 @@ RUN apt-get update && \
               echo export GOPATH=/home/repo >> ~/.profile && \
               echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH >> ~/.profile && cat ~/.profile && \
               go version && go env
+              rm -f /usr/sbin/policy-rc.d
 #              git clone init && \
 #              go get -u -t git@github.com:couchbase/sync-gateway.git && ls
 # Building from Source
