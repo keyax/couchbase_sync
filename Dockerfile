@@ -66,8 +66,8 @@ RUN apt-get update && \
               echo export GOPATH=/home/repo >> ~/.profile && \
               echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH >> ~/.profile && cat ~/.profile && \
               go version && go env && \
-              git init && \
-              go get -u -t git@github.com:couchbase/sync-gateway && ls 
+#              git clone init && \
+              go get -u -t git@github.com:couchbase/sync-gateway.git && ls
 RUN brew install repo && \
     mkdir ~/sync_gateway; cd ~/sync_gateway && \
     wget https://raw.githubusercontent.com/couchbase/sync_gateway/master/bootstrap.sh && \
