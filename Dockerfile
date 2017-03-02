@@ -49,8 +49,12 @@ COPY ./sites_available /etc/nginx/
 
 ADD ./scripto  /home/repo/
 WORKDIR /home/repo
-RUN wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz
-RUN tar -xvf go1.8.linux-amd64.tar.gz
+RUN apt-get update && \
+    apt-get install --no-install-recommends --no-install-suggests -y \
+          git \
+          build-essential && \
+    wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz && \
+    tar -xvf go1.8.linux-amd64.tar.gz
 RUN ls -shal ./go && mv ./go /usr/local/ && ls
 RUN echo export GOROOT=/usr/local/go > ~/.profile
 RUN echo export GOPATH=/home/repo > ~/.profile && cat ~/.profile
