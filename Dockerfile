@@ -61,15 +61,17 @@ RUN apt-get update && \
     echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH > ~/.profile && cat ~/.profile && \
     export GOROOT=/usr/local/go && \
     export GOPATH=/home/repo && \
-    PATH=$GOROOT/bin:$GOPATH/bin:$PATH && \
+    PATH=${GOROOT}/bin:${GOPATH}/bin:$PATH && \
     go version && \
-    go env 
+    go env
 RUN go get -u -t github.com/couchbase/sync-gateway
 RUN ls
 RUN git init
 RUN ./bootstrap.sh
 RUN ./build.sh
 RUN ./test.sh
+
+
 
 #  91msync_gateway:    unrecognized service
 #dpkg: error processing package couchbase-sync-gateway (--install):
