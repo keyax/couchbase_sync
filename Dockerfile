@@ -50,6 +50,8 @@ ADD ./scripto  /repo/
 WORKDIR /repo
 RUN ls
 RUN ./bootstrap.sh
+RUN ./build.sh
+RUN ./test.sh
 
 #  91msync_gateway:    unrecognized service
 #dpkg: error processing package couchbase-sync-gateway (--install):
