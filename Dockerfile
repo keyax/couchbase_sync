@@ -51,9 +51,9 @@ ADD ./scripto  /home/repo/
 WORKDIR /home/repo
 RUN wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz
 RUN tar -xvf go1.8.linux-amd64.tar.gz
-RUN mv go /usr/local
+RUN ls && mv go /usr/local/
 RUN echo export GOROOT=/usr/local/go > ~/.profile
-RUN echo export GOPATH=/home/repo > ~/.profile
+RUN echo export GOPATH=/home/repo > ~/.profile && cat ~/.profile
 RUN export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 RUN go version
 RUN go env
