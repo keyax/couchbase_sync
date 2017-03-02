@@ -47,7 +47,7 @@ COPY ./sites_available /etc/nginx/
 
 ADD ./scripts/  /
 WORKDIR /scripts
-RUN cd /scripts && ./bootstrap.sh
+RUN bootstrap.sh
 
 #91msync_gateway: unrecognized service
 #dpkg: error processing package couchbase-sync-gateway (--install):
