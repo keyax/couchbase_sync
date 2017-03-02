@@ -71,17 +71,17 @@ RUN apt-get update && \
     ./bootstrap.sh && \
     ./build.sh && \
     ./test.sh && \
-    apt-get autoremove build-essential --assume-yes && \
+##    apt-get autoremove build-essential --assume-yes && \
 #   remove dependent packages
-    apt-get purge build-essential && \
-    # remove packages installed by other packages and no longer needed purge configs
-    apt-get autoremove --purge --assume-yes && \
+##    apt-get purge build-essential && \
+#   remove packages installed by other packages and no longer needed purge configs
+##    apt-get autoremove --purge --assume-yes && \
     #   remove the aptitude cache in /var/cache/apt/archives frees 0MB
-    apt-get clean && \
+##    apt-get clean && \
     # delete 27MB all the apt list files since they're big and get stale quickly
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    rm tar -xvf go1.8.linux-amd64.tar.gz && \
-    rm -r /usr/local/go
+##    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+##    rm tar -xvf go1.8.linux-amd64.tar.gz && \
+##    rm -r /usr/local/go
 
 
 #  91msync_gateway:    unrecognized service
@@ -110,7 +110,7 @@ RUN apt-get update && \
 
 # configure
 ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
-RUN ls 
+RUN ls
 
 # copy the default config into the container
 COPY sync_gateway_config.json /etc/sync_gateway/config.json
