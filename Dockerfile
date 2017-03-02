@@ -54,16 +54,16 @@ RUN apt-get update && \
           git \
           build-essential && \
     wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz && \
-    tar -xvf go1.8.linux-amd64.tar.gz
-RUN ls -shal ./go && mv ./go /usr/local/ && ls
-RUN echo export GOROOT=/usr/local/go > ~/.profile
-RUN echo export GOPATH=/home/repo > ~/.profile && cat ~/.profile
-RUN echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH > ~/.profile && cat ~/.profile
-RUN export GOROOT=/usr/local/go
-RUN export GOPATH=/home/repo
-RUN PATH=$GOROOT/bin:$GOPATH/bin:$PATH
-RUN go version
-RUN go env
+    tar -xvf go1.8.linux-amd64.tar.gz && \
+    mv ./go /usr/local/ && \
+    echo export GOROOT=/usr/local/go > ~/.profile && \
+    echo export GOPATH=/home/repo > ~/.profile && cat ~/.profile && \
+    echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH > ~/.profile && cat ~/.profile && \
+    export GOROOT=/usr/local/go && \
+    export GOPATH=/home/repo && \
+    PATH=$GOROOT/bin:$GOPATH/bin:$PATH && \
+    go version && \
+    go env 
 RUN go get -u -t github.com/couchbase/sync-gateway
 RUN ls
 RUN git init
