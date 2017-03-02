@@ -110,15 +110,15 @@ RUN apt-get update && \
 
 # configure
 ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
-
+RUN ls / -shalR | grep sync_gateway
 # copy the default config into the container
 COPY sync_gateway_config.json /etc/sync_gateway/config.json
 
 # Invoke the sync_gateway executable by default
-ENTRYPOINT ["sync_gateway"]
+# ENTRYPOINT ["sync_gateway"]
 
 # If user doesn't specify any args, use the default config
-CMD ["/etc/sync_gateway/config.json"]
+# CMD ["/etc/sync_gateway/config.json"]
 
 # Expose ports
 #  port 4984: public port
