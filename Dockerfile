@@ -46,6 +46,7 @@ COPY ./sites_available /etc/nginx/
 ## CMD ["nginx", "-g", "daemon off;"]
 
 ADD ./scripto  /home/repo/
+# RUN cd /home/repo
 WORKDIR /home/repo
 ENV GOPATH /home/repo
 ENV GOROOT /usr/local/go
@@ -55,6 +56,7 @@ RUN apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
           git \
           build-essential && \
+    cd /home/repo && \
     wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz && \
     tar -xvf go1.8.linux-amd64.tar.gz && \
     mv ./go /usr/local/ && \
@@ -113,10 +115,10 @@ ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
 COPY sync_gateway_config.json /etc/sync_gateway/config.json
 
 # Invoke the sync_gateway executable by default
-# ENTRYPOINT ["sync_gateway"]
+ENTRYPOINT ["sync_gateway"]
 
 # If user doesn't specify any args, use the default config
-# CMD ["/etc/sync_gateway/config.json"]
+CMD ["/etc/sync_gateway/config.json"]
 
 # Expose ports
 #  port 4984: public port
