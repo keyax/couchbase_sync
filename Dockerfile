@@ -45,8 +45,9 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 
 COPY ./sites_available /etc/nginx/
 
-ADD ./scripts  /scripts
+ADD ./scripts  /scripts/
 WORKDIR /scripts
+RUN ls
 RUN ./bootstrap.sh
 
 #91msync_gateway: unrecognized service
