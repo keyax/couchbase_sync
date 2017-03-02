@@ -31,8 +31,6 @@ RUN ["/bin/bash", "-c",  "set -ex; \
 RUN echo "deb http://nginx.org/packages/ubuntu/ trusty nginx" >> /etc/apt/sources.list \
 	&& apt-get update \
 	&& apt-get install --no-install-recommends --no-install-suggests -y \
-            git \
-            build-essential \
             ca-certificates \
 						nginx=${NGINX_VERSION} \
 						nginx-module-xslt \
@@ -44,8 +42,9 @@ RUN echo "deb http://nginx.org/packages/ubuntu/ trusty nginx" >> /etc/apt/source
 	&& rm -rf /var/lib/apt/lists/*
 
 # forward request and error logs to docker log collector
-RUN ln -sf /dev/stdout /var/log/nginx/access.log \
-	&& ln -sf /dev/stderr /var/log/nginx/error.log
+RUN mkdir -p /var/log/nginx && \
+    ln -sf /dev/stdout /var/log/nginx/access.log && \
+	  ln -sf /dev/stderr /var/log/nginx/error.log
 COPY ./sites_available /etc/nginx/
 
 ## EXPOSE 80 443
@@ -60,7 +59,6 @@ USER syncuser
 ADD ./scripto  /home/repo/
 # RUN cd /home/repo
 WORKDIR /home/repo
-
 
 ENV GOPATH /home/repo
 ENV GOROOT /usr/local/go
