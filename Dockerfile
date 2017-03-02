@@ -79,9 +79,9 @@ RUN apt-get update && \
     #   remove the aptitude cache in /var/cache/apt/archives frees 0MB
     apt-get clean && \
     # delete 27MB all the apt list files since they're big and get stale quickly
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm tar -xvf go1.8.linux-amd64.tar.gz && \
-    rm -r /usr/local/go && \
+    rm -r /usr/local/go
 
 
 #  91msync_gateway:    unrecognized service
