@@ -31,6 +31,7 @@ RUN ["/bin/bash", "-c",  "set -ex; \
 RUN echo "deb http://nginx.org/packages/ubuntu/ trusty nginx" >> /etc/apt/sources.list \
 	&& apt-get update \
 	&& apt-get install --no-install-recommends --no-install-suggests -y \
+            apt-transport-https \
             ca-certificates \
 						nginx=${NGINX_VERSION} \
 						nginx-module-xslt \
