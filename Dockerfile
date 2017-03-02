@@ -50,7 +50,7 @@ ADD ./scripto  /home/repo/
 WORKDIR /home/repo
 ENV GOPATH /home/repo
 ENV GOROOT /usr/local/go
-ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH && \
+ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
 
 RUN apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
