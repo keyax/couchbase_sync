@@ -58,15 +58,16 @@ WORKDIR /home/repo
 ENV GOPATH /home/repo
 ENV GOROOT /usr/local/go
 ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
+# RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && apt-get install **Package** && rm -f /usr/sbin/policy-rc.d
 RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && \
     apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
-              build-essential make cmake scons curl git \
+              build-essential make cmake scons git \
               ruby autoconf automake autoconf-archive \
               gettext libtool flex bison \
               libbz2-dev libcurl4-openssl-dev \
-              libexpat-dev libncurses-dev && \
-              ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
+#              libexpat-dev libncurses-dev && \
+          &&  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
               PATH="$HOME/.linuxbrew/bin:$PATH"
               echo 'export PATH="$HOME/.linuxbrew/bin:$PATH"' >>~/.bash_profile
               wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz && \
