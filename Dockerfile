@@ -45,9 +45,19 @@ COPY ./sites_available /etc/nginx/
 ## RUN nginx -g daemon off
 ## CMD ["nginx", "-g", "daemon off;"]
 
-ADD ./scripto  /home/repo/
-# RUN cd /home/repo
-WORKDIR /home/repo
+# RUN groupadd -r nodejs && useradd -r -g nodejs nodejs --create-home nodejs
+RUN groupadd --gid 1000 node \
+  && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
+  ADD ./scripto  /home/repo/
+  # RUN cd /home/repo
+  WORKDIR /home/repo
+
+RUN su node && \
+      cd /home/repo && \
+
+
+
+
 ENV GOPATH /home/repo
 ENV GOROOT /usr/local/go
 ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
