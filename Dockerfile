@@ -60,7 +60,7 @@ ENV GOPATH /home/repo
 ENV GOROOT /usr/local/go
 ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
 
-RUN userdadd --system -s /sbin/nologin syncuser && \
+RUN /bin/userdadd --system -s /sbin/nologin syncuser && \
     echo '%syncuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
     visudo -f /etc/sudoers
 USER syncuser
