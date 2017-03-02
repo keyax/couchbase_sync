@@ -74,7 +74,7 @@ RUN apt-get update && \
               build-essential make cmake scons git \
               ruby autoconf automake autoconf-archive \
               gettext libtool flex bison \
-              libbz2-dev libcurl4-openssl-dev \
+#              libbz2-dev libcurl4-openssl-dev \
 #              libexpat-dev libncurses-dev && \
           &&  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
               PATH="$HOME/.linuxbrew/bin:$PATH"
