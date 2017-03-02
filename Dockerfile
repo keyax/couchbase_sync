@@ -50,7 +50,7 @@ WORKDIR /scripto
 RUN ls
 RUN ./bootstrap.sh
 
-#  91msync_gateway: unrecognized service
+#  91msync_gateway:    unrecognized service
 #dpkg: error processing package couchbase-sync-gateway (--install):
 #      subprocess installed post-installation script returned error exit status 1
 # Install Sync Gateway set -x &&   \
