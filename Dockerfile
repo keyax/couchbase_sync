@@ -71,8 +71,6 @@ RUN apt-get update && \
     ./bootstrap.sh && \
     ./build.sh && \
     ./test.sh && \
-    rm tar -xvf go1.8.linux-amd64.tar.gz && \
-    rm /usr/local/go && \
     apt-get autoremove build-essential --assume-yes && \
 #   remove dependent packages
     apt-get purge build-essential && \
@@ -82,7 +80,8 @@ RUN apt-get update && \
     apt-get clean && \
     # delete 27MB all the apt list files since they're big and get stale quickly
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
+    rm tar -xvf go1.8.linux-amd64.tar.gz && \
+    rm -r /usr/local/go && \
 
 
 #  91msync_gateway:    unrecognized service
