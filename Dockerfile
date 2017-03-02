@@ -51,11 +51,6 @@ COPY ./sites_available /etc/nginx/
 ## RUN nginx -g daemon off
 ## CMD ["nginx", "-g", "daemon off;"]
 
-RUN useradd --system -s /sbin/nologin syncuser
-USER syncuser
-
-# RUN su node && cd /home/repo
-
 ADD ./scripto  /home/repo/
 # RUN cd /home/repo
 WORKDIR /home/repo
@@ -84,6 +79,11 @@ RUN apt-get update && \
 #              git clone init && \
 #              go get -u -t git@github.com:couchbase/sync-gateway.git && ls
 # Building from Source
+
+RUN useradd --system -s /sbin/nologin syncuser
+USER syncuser
+# RUN su node && cd /home/repo
+
 RUN brew install repo && \
     mkdir ~/sync_gateway; cd ~/sync_gateway && \
     wget https://raw.githubusercontent.com/couchbase/sync_gateway/master/bootstrap.sh && \
