@@ -17,7 +17,6 @@ LABEL keyax.app.ver "2.1"
 ##     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 # this forces "apt-get update" in dependent images, which is also good
 
-COPY ./sites_available /etc/nginx/
 
 ENV NGINX_VERSION 1.10.3-1~trusty
 
@@ -40,19 +39,17 @@ RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 573BFD6B3D8FBC64107
 # forward request and error logs to docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 	&& ln -sf /dev/stderr /var/log/nginx/error.log
+COPY ./sites_available /etc/nginx/
 
 ## EXPOSE 80 443
-
+RUN nginx -g daemon off
 ## CMD ["nginx", "-g", "daemon off;"]
-
-COPY ./sites_available /etc/nginx/
 
 ADD ./scripto  /home/repo/
 WORKDIR /home/repo
-ENV GOROOT /usr/local/go
 ENV GOPATH /home/repo
-ENV PATH ${GOROOT}/bin:${GOPATH}/bin:$PATH && \
-
+ENV GOROOT /usr/local/go
+ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH && \
 
 RUN apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
@@ -70,7 +67,7 @@ RUN apt-get update && \
     go get -u -t git@github.com:couchbase/sync-gateway && ls && \
     ./bootstrap.sh && \
     ./build.sh && \
-    ./test.sh && \
+    ./test.sh
 ##    apt-get autoremove build-essential --assume-yes && \
 #   remove dependent packages
 ##    apt-get purge build-essential && \
