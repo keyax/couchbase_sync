@@ -106,7 +106,7 @@ RUN apt-get update && \
 
 
 # Create directory where the default config stores memory snapshots to disk
-RUN mkdir -p /opt/couchbase-sync-gateway/data
+# RUN mkdir -p /opt/couchbase-sync-gateway/data
 
 # configure
 ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
