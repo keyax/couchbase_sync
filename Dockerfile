@@ -60,7 +60,7 @@ ENV GOROOT /usr/local/go
 ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends --no-install-suggests -y \
+    apt-get install --no-install-recommends --no-install-suggests --no-triggers -y \
               build-essential make cmake scons curl git \
               ruby autoconf automake autoconf-archive \
               gettext libtool flex bison \
