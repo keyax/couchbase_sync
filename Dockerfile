@@ -42,7 +42,7 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 COPY ./sites_available /etc/nginx/
 
 ## EXPOSE 80 443
-RUN nginx -g daemon off
+## RUN nginx -g daemon off
 ## CMD ["nginx", "-g", "daemon off;"]
 
 ADD ./scripto  /home/repo/
