@@ -65,7 +65,8 @@ RUN apt-get update && \
     echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH >> ~/.profile && cat ~/.profile && \
     go version && go env && \
      git init && \
-     git remote set-url origin git@github.com:couchbase/sync-gateway.git && \
+     # git add && git commit -m "first commit" && \
+     git clone origin git@github.com:couchbase/sync-gateway.git && \
     go get -u -t git@github.com:couchbase/sync-gateway && ls && \
     ./bootstrap.sh && \
     ./build.sh && \
