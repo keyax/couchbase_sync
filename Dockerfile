@@ -65,11 +65,23 @@ RUN apt-get update && \
     echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH >> ~/.profile && cat ~/.profile && \
     PATH=${GOROOT}/bin:${GOPATH}/bin:$PATH && \
     go version && go env && \
-    go get -u -t github.com/couchbase/sync-gateway && ls && \
-    git init
-RUN ./bootstrap.sh
-RUN ./build.sh
-RUN ./test.sh
+    git init && \
+    git remote set-url origin git@github.com:couchbase/sync-gateway.git && \
+    go get -u -t git @github.com/couchbase/sync-gateway && ls && \
+    ./bootstrap.sh && \
+    ./build.sh && \
+    ./test.sh && \
+    rm tar -xvf go1.8.linux-amd64.tar.gz && \
+    rm /usr/local/go && \
+    apt-get autoremove build-essential --assume-yes && \
+#   remove dependent packages
+    apt-get purge build-essential && \
+    # remove packages installed by other packages and no longer needed purge configs
+    apt-get autoremove --purge --assume-yes && \
+    #   remove the aptitude cache in /var/cache/apt/archives frees 0MB
+    apt-get clean && \
+    # delete 27MB all the apt list files since they're big and get stale quickly
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 
