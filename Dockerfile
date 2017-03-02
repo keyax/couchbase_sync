@@ -21,14 +21,6 @@ LABEL keyax.app.ver "2.1"
 # RUN groupadd --gid 1000 node \
 #  && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 
-RUN useradd --system -s /sbin/nologin syncuser
-USER syncuser
-
-# RUN su node && cd /home/repo
-
-ADD ./scripto  /home/repo/
-# RUN cd /home/repo
-WORKDIR /home/repo
 
 ENV NGINX_VERSION 1.10.3-1~trusty
 
@@ -59,6 +51,16 @@ COPY ./sites_available /etc/nginx/
 ## EXPOSE 80 443
 ## RUN nginx -g daemon off
 ## CMD ["nginx", "-g", "daemon off;"]
+
+RUN useradd --system -s /sbin/nologin syncuser
+USER syncuser
+
+# RUN su node && cd /home/repo
+
+ADD ./scripto  /home/repo/
+# RUN cd /home/repo
+WORKDIR /home/repo
+
 
 ENV GOPATH /home/repo
 ENV GOROOT /usr/local/go
