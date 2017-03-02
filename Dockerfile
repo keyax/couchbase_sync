@@ -62,7 +62,7 @@ ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
 
 RUN useradd --system -s /sbin/nologin syncuser
 USER syncuser
-RUN su - syncuser && cd /home/repo && \
+# RUN su - syncuser && cd /home/repo && \
 
 # RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && apt-get install **Package** && rm -f /usr/sbin/policy-rc.d
 #RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && \
