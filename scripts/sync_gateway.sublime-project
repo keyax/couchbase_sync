@@ -1,0 +1,92 @@
+{
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				"sync_gateway"
+			],
+			"follow_symlinks": true,
+			"name": "sync_gateway",
+			"path": ".",
+            "folder_exclude_patterns": ["app"]
+		},
+		{
+			"file_exclude_patterns":
+			[
+				".*"
+			],
+			"follow_symlinks": true,
+			"path": "../../../../src/github.com/couchbase/go-couchbase"
+		},
+		{
+			"file_exclude_patterns":
+			[
+				".*"
+			],
+			"follow_symlinks": true,
+			"path": "../../../../src/github.com/couchbase/gomemcached"
+		},
+		{
+			"file_exclude_patterns":
+			[
+				".*"
+			],
+			"follow_symlinks": true,
+			"path": "../../../../src/github.com/couchbase/sg-bucket"
+		},
+		{
+			"file_exclude_patterns":
+			[
+				".*"
+			],
+			"follow_symlinks": true,
+			"path": "../../../../src/github.com/couchbaselabs/walrus"
+		},
+		{
+			"file_exclude_patterns":
+			[
+				".*"
+			],
+			"follow_symlinks": true,
+			"path": "../../../../src/github.com/couchbase/cbgt"
+		},{
+			"file_exclude_patterns":
+			[
+				".*"
+			],
+			"follow_symlinks": true,
+			"path": "../../../../src/github.com/couchbase/gocb"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "utils"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "examples"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "../../../../src/github.com/couchbaselabs/sync_gateway_admin_ui"
+		}
+	],
+	"settings":
+	{
+		"GoSublime":
+		{
+			"env":
+			{
+				"GOPATH": "../../../../src/"
+			}
+		},
+		"rulers":
+		[
+			100
+		],
+		"tab_size": 4,
+		"translate_tabs_to_spaces": false,
+		"trim_automatic_white_space": true,
+		"trim_trailing_white_space_on_save": true
+	}
+}
