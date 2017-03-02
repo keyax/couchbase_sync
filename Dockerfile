@@ -25,7 +25,8 @@ RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 573BFD6B3D8FBC64107
 	&& echo "deb http://nginx.org/packages/ubuntu/ trusty nginx" >> /etc/apt/sources.list \
 	&& apt-get update \
 	&& apt-get install --no-install-recommends --no-install-suggests -y \
-						ca-certificates \
+            git \
+            ca-certificates \
 						nginx=${NGINX_VERSION} \
 						nginx-module-xslt \
 						nginx-module-geoip \
