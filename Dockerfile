@@ -45,9 +45,9 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 
 COPY ./sites_available /etc/nginx/
 
-ADD ./scripts/  /
+ADD ./scripts  /scripts
 WORKDIR /scripts
-RUN bootstrap.sh
+RUN ./bootstrap.sh
 
 #91msync_gateway: unrecognized service
 #dpkg: error processing package couchbase-sync-gateway (--install):
