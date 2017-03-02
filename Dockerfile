@@ -64,11 +64,9 @@ RUN apt-get update && \
     echo export GOPATH=/home/repo >> ~/.profile && \
     echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH >> ~/.profile && cat ~/.profile && \
     PATH=${GOROOT}/bin:${GOPATH}/bin:$PATH && \
-    go version && \
-    go env
-RUN go get -u -t github.com/couchbase/sync-gateway
-RUN ls
-RUN git init
+    go version && go env && \
+    go get -u -t github.com/couchbase/sync-gateway && ls && \
+    git init
 RUN ./bootstrap.sh
 RUN ./build.sh
 RUN ./test.sh
