@@ -107,7 +107,7 @@ RUN apt-get update && \
 
 # configure
 ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
-RUN ls
+## RUN ls
 
 # copy the default config into the container
 COPY sync_gateway_config.json /etc/sync_gateway/config.json
