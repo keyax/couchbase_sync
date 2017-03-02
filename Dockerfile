@@ -60,7 +60,7 @@ ENV GOROOT /usr/local/go
 ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
 RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && \
     apt-get update && \
-    apt-get install --no-install-recommends --no-install-suggests --no-triggers -y \
+    apt-get install --no-install-recommends --no-install-suggests -y \
               build-essential make cmake scons curl git \
               ruby autoconf automake autoconf-archive \
               gettext libtool flex bison \
