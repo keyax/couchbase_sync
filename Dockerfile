@@ -26,6 +26,7 @@ RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 573BFD6B3D8FBC64107
 	&& apt-get update \
 	&& apt-get install --no-install-recommends --no-install-suggests -y \
             git \
+            gcc \
             ca-certificates \
 						nginx=${NGINX_VERSION} \
 						nginx-module-xslt \
@@ -46,9 +47,19 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 
 COPY ./sites_available /etc/nginx/
 
-ADD ./scripto  /repo/
-WORKDIR /repo
+ADD ./scripto  /home/repo/
+WORKDIR /home/repo
+RUN wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz
+RUN tar -xvf go1.8.linux-amd64.tar.gz
+RUN mv go /usr/local
+RUN echo export GOROOT=/usr/local/go > ~/.profile
+RUN echo export GOPATH=/home/repo > ~/.profile
+RUN export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+RUN go version
+RUN go env
+RUN go get -u -t github.com/couchbase/sync-gateway
 RUN ls
+RUN git init
 RUN ./bootstrap.sh
 RUN ./build.sh
 RUN ./test.sh
