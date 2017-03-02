@@ -59,11 +59,16 @@ WORKDIR /home/repo
 ENV GOPATH /home/repo
 ENV GOROOT /usr/local/go
 ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
+RUN groupadd --gid 1000 node \
+  && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
+RUN su node && \
+    cd /home/node
+# RUN groupadd -r syncuser && useradd -r -g syncuser syncuser --create-home syncuser
 
-RUN /bin/userdadd --system -s /sbin/nologin syncuser && \
-    echo '%syncuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
-    visudo -f /etc/sudoers
-USER syncuser
+# RUN /bin/userdadd --system -s /sbin/nologin syncuser && \
+#    echo '%syncuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+#    visudo -f /etc/sudoers
+# USER syncuser
 # RUN syncuser ALL= NOPASSWD: /bin/apt-get
 # RUN su - syncuser && cd /home/repo && \
 
