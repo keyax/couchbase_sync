@@ -67,7 +67,7 @@ RUN apt-get update && \
     go version && go env && \
     git init && \
     git remote set-url origin git@github.com:couchbase/sync-gateway.git && \
-    go get -u -t git @github.com/couchbase/sync-gateway && ls && \
+    go get -u -t git@github.com:couchbase/sync-gateway && ls && \
     ./bootstrap.sh && \
     ./build.sh && \
     ./test.sh && \
