@@ -53,7 +53,7 @@ RUN groupadd --gid 1000 node \
   WORKDIR /home/repo
 
 RUN su node && \
-      cd /home/repo && \
+      cd /home/repo
 
 
 
