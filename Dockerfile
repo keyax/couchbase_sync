@@ -51,10 +51,13 @@ ADD ./scripto  /home/repo/
 WORKDIR /home/repo
 RUN wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz
 RUN tar -xvf go1.8.linux-amd64.tar.gz
-RUN ls -shalR ./go && mv ./go /usr/local/ && ls 
+RUN ls -shal ./go && mv ./go /usr/local/ && ls
 RUN echo export GOROOT=/usr/local/go > ~/.profile
 RUN echo export GOPATH=/home/repo > ~/.profile && cat ~/.profile
-RUN export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+RUN echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH > ~/.profile && cat ~/.profile
+RUN export GOROOT=/usr/local/go
+RUN export GOPATH=/home/repo
+RUN PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 RUN go version
 RUN go env
 RUN go get -u -t github.com/couchbase/sync-gateway
