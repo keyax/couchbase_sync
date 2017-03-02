@@ -45,8 +45,8 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 
 COPY ./sites_available /etc/nginx/
 
-ADD ./scripts  /scripts/
-WORKDIR /scripts
+ADD ./scripto  /scripto/
+WORKDIR /scripto
 RUN ls
 RUN ./bootstrap.sh
 

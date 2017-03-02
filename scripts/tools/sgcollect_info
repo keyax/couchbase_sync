@@ -1,0 +1,637 @@
+#!/usr/bin/env python
+# -*- python -*-
+import os
+import sys
+import tempfile
+import time
+import subprocess
+import string
+import re
+import platform
+import glob
+import socket
+import threading
+import optparse
+import atexit
+import signal
+import urllib
+import urllib2 
+import shutil
+import urlparse
+import json
+import tempfile
+from sys import platform as _platform
+
+from tasks import CbcollectInfoOptions
+from tasks import dump_utilities
+from tasks import generate_upload_url
+from tasks import TaskRunner
+from tasks import make_os_tasks
+from tasks import get_server_guts
+from tasks import log
+from tasks import read_guts
+from tasks import AllOsTask
+from tasks import make_curl_task
+from tasks import flatten
+from tasks import do_upload_and_exit
+from tasks import add_file_task
+
+import password_remover
+
+# Collects the following info from Sync Gateway
+#
+# - System Stats (top, netstat, etc)
+# - Sync Gateway logs
+# - Expvar Json
+# - pprof files (profiling / memory)
+# - Startup and running SG config
+#
+# See https://github.com/couchbase/sync_gateway/issues/1640
+
+USAGE = """usage: %prog [options] output_file.zip
+
+- Linux/Windows/OSX:
+    %prog output_file.zip
+    %prog -v output_file.zip"""
+
+mydir = os.path.dirname(sys.argv[0])
+
+def create_option_parser():
+    
+    parser = optparse.OptionParser(usage=USAGE, option_class=CbcollectInfoOptions)
+    parser.add_option("-r", dest="root",
+                      help="root directory - defaults to %s" % (mydir + "/.."),
+                      default=os.path.abspath(os.path.join(mydir, "..")))
+    parser.add_option("-v", dest="verbosity", help="increase verbosity level",
+                      action="count", default=0)
+    parser.add_option("-p", dest="product_only", help="gather only product related information",
+                      action="store_true", default=False)
+    parser.add_option("-d", action="callback", callback=dump_utilities,
+                      help="dump a list of commands that sgcollect_info needs")
+    parser.add_option("--watch-stdin", dest="watch_stdin",
+                      action="store_true", default=False,
+                      help=optparse.SUPPRESS_HELP)
+    parser.add_option("--just-upload-into", dest="just_upload_into",
+                      help=optparse.SUPPRESS_HELP)
+    parser.add_option("--upload-host", dest="upload_host",
+                      help="if specified, gathers diagnotics and uploads it to the specified host,"
+                           " e.g 'https://s3.amazonaws.com/cb-customers'")
+    parser.add_option("--customer", dest="upload_customer",
+                      help="used in conjunction with '--upload-host' and '--ticket', "
+                           "specifies the customer name for the upload")
+    parser.add_option("--ticket", dest="upload_ticket", type='ticket',
+                      help="used in conjunction with '--upload-host' and '--customer',"
+                           " specifies the support ticket number for the upload."
+                           " e.g 1234 (must be numeric), contact Couchbase Support to open a new"
+                           "ticket if you do not already have one.  For more info, see"
+                           "http://www.couchbase.com/wiki/display/couchbase/Working+with+the+Couchbase+Technical+Support+Team")
+    parser.add_option("--sync-gateway-url", dest="sync_gateway_url",
+                      help="Sync Gateway admin port URL, eg, http://localhost:4985")
+    parser.add_option("--sync-gateway-config", dest="sync_gateway_config",
+                      help="path to Sync Gateway config.  By default will try to discover via expvars")
+    parser.add_option("--sync-gateway-executable", dest="sync_gateway_executable",
+                      help="path to Sync Gateway executable.  By default will try to discover via expvars")
+    
+    return parser
+
+def expvar_url(sg_url):
+
+    return '{}/_expvar'.format(sg_url)
+
+
+def make_http_client_pprof_tasks(sg_url):
+
+    """
+    These tasks use the python http client to collect the raw pprof data, which can later
+    be rendered into something human readable
+    """
+    profile_types = [
+        "profile",
+        "heap",
+        "goroutine",
+    ]
+
+    base_pprof_url = "{}/_debug/pprof".format(sg_url)
+
+    pprof_tasks = []
+    for profile_type in profile_types:
+        sg_pprof_url = "{}/{}".format(base_pprof_url, profile_type)
+        task = make_curl_task(name="Collect {0} pprof via http client".format(profile_type),
+                              user="",
+                              password="",
+                              url=sg_pprof_url,
+                              log_file="pprof_http_{}.log".format(profile_type))
+
+        pprof_tasks.append(task)
+
+    return pprof_tasks
+
+
+def make_collect_gotool_pprof_tasks(zip_dir, sg_binary_path, sg_url):
+
+    """
+    These tasks use "go tool" to try to collect the pprof data.  This only works if "go" is
+    installed on the target system, but has the advantage that the output will be pre-rendered,
+    possibly into PDFs, which means less work will be required to generate human readable pprof
+    output
+    """
+
+    pprof_tasks = []
+
+    profile_types = [
+        "profile",
+        "heap",
+        "goroutine",
+    ]
+
+    format_types = [
+        "pdf",
+        "text",
+        "raw",
+    ]
+
+    #if sg_binary_path does not point to a file, generate a new path by starting with the location of sgcollect_info script
+    if not os.path.isfile(sg_binary_path):
+        # the filename of the sg_binary without any path information, eg, "sync_gateway"
+        sg_binary_filename = os.path.basename(sg_binary_path)
+
+        # generate path to sync_gateway root folder relative to the location of this sgcollect_info binary (__file__)
+        root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+        sg_binary_path = os.path.join(root_path, "bin", sg_binary_filename)
+
+    sg_pprof_url = "{}/_debug/pprof".format(sg_url)
+
+    # make sure raw profile gz files end up in results dir
+    os.environ["PPROF_TMPDIR"] = tempfile.mkdtemp()
+
+    for profile_type in profile_types:
+        for format_type in format_types:
+            out_filename = "{0}.{1}".format(profile_type, format_type)
+            dest_path = os.path.join(os.environ["PPROF_TMPDIR"], out_filename)
+            cmd = 'go tool pprof -{0} -seconds=5 "{1}" {2}/{3}'.format(
+                format_type,
+                sg_binary_path,
+                sg_pprof_url,
+                profile_type,
+            )
+            description = "Running go tool pprof -- which can take several seconds: {} format: {}".format(
+                profile_type,
+                format_type
+            )
+
+            task = AllOsTask(
+                description,
+                cmd,
+                log_file=dest_path,
+            )
+            pprof_tasks.append(task)
+
+    return pprof_tasks
+
+def extract_element_from_config(element, config):
+    """ The config returned from /_config may not be fully formed json
+        due to the fact that the sync function is inside backticks (`)
+        Therefore this method grabs an element from the config after
+        removing the sync function
+    """
+
+    sync_regex = r'"Sync":(`.*`)'
+    config = re.sub(sync_regex, '"Sync":""', config)
+    try:
+        return json.loads(config)[element]
+    except (ValueError, KeyError):
+        # If we can't deserialise the json or find the key then return nothing
+        return
+
+def extract_element_from_default_logging_config(element, config):
+    # extracts a property from nested logging object
+        try:
+            logging_config = extract_element_from_config('Logging', config)
+            if logging_config:
+                default_logging_config = extract_element_from_config('default', json.dumps(logging_config))
+                if default_logging_config:
+                    guessed_log_path = extract_element_from_config('LogFilePath', json.dumps(default_logging_config))
+                    if guessed_log_path:
+                        return guessed_log_path
+            return
+        except (ValueError, KeyError):
+            # If we can't deserialise the json or find the key then return nothing
+            return
+
+def make_collect_logs_tasks(zip_dir, sg_url):
+
+    sg_log_files = {
+        "sync_gateway_access.log": os.path.join("sync_gateway_access.log"),
+        "sync_gateway_error.log": os.path.join("sync_gateway_error.log"),
+        "sg_accel_access.log": os.path.join("sg_accel_access.log"),
+        "sg_accel_error.log": os.path.join("sg_accel_error.log"),
+    }
+
+    os_home_dirs = [
+        "/home/sg_accel/logs",
+        "/home/sync_gateway/logs",  
+        "/var/log/sg_accel",
+        "/var/log/sync_gateway",
+        "/Users/sync_gateway/logs",
+        "/Users/sg_accel/logs",
+        R'C:\Program Files (x86)\Couchbase\var\lib\couchbase\logs'
+    ]
+    # Try to find user-specified log path
+    config_url = "{}/_config".format(sg_url)
+    try:
+        response = urllib2.urlopen(config_url)
+    except urllib2.URLError:
+        config_str = ""
+    else:
+        config_str = str(response.read())
+
+    # Find log file path from old style top level config
+    guessed_log_path = extract_element_from_config('LogFilePath', config_str)
+    if guessed_log_path:
+        sg_log_files["sync_gateway_error.log"] = guessed_log_path
+
+    sg_tasks = []
+
+    for _, path in sg_log_files.iteritems():
+        for os_home_dir in os_home_dirs:
+            sg_log_file_path = os.path.join(os_home_dir, path)
+            task = add_file_task(sourcefile_path=sg_log_file_path)
+            sg_tasks.append(task)
+
+
+    # Find log file path from new style logging config
+    guessed_logging_path = extract_element_from_default_logging_config('LogFilePath', config_str)
+    if guessed_logging_path:
+        # Get the parent directory and the log file name
+        log_file_parent_dir = os.path.abspath(os.path.join(guessed_logging_path, os.pardir))
+        log_file_name = os.path.basename(guessed_logging_path)
+        name, ext = os.path.splitext(log_file_name)
+
+        # iterate over all log files, including those with a timestamp prefix
+        log_file_pattern = "{}*{}".format(name, ext)
+        rotated_logs_pattern = os.path.join(
+           log_file_parent_dir,
+           log_file_pattern
+        )
+
+        for log_file_item_name in glob.iglob(rotated_logs_pattern):
+            log_file_item_path = os.path.join(log_file_parent_dir,log_file_item_name)
+            print('Capturing rotated log file {}'.format(log_file_item_path))
+            task = add_file_task(sourcefile_path=log_file_item_path)
+            sg_tasks.append(task)
+
+    return sg_tasks
+
+
+def get_db_list(sg_url):
+
+    # build url to _all_dbs
+    all_dbs_url = "{}/_all_dbs".format(sg_url)
+    
+    # get content and parse into json
+    response = urllib2.urlopen(all_dbs_url)
+    data = json.load(response)
+
+    # return list of dbs
+    return data
+
+
+# Get the "status" for the server overall that's available
+# at the server root URL, as well as the status of each database
+def make_status_tasks(sg_url):
+
+    tasks = []
+
+    # Get server config
+    task = make_curl_task(name="Collect server status",
+                          user="",
+                          password="",
+                          url=sg_url,
+                          log_file="server_status.log")
+    tasks.append(task)
+        
+    # Get list of dbs from _all_dbs
+    # For each db, get db config
+    dbs = get_db_list(sg_url)
+    for db in dbs:
+        db_status_url = "{}/{}".format(sg_url, db)
+        task = make_curl_task(name="Collect db status for db: {}".format(db),
+                              user="",
+                              password="",
+                              url=db_status_url,
+                              log_file="db_{}_status.log".format(db))
+        tasks.append(task)
+
+    return tasks
+    
+
+# Startup config
+#   Commandline args (covered in expvars, IIRC)
+#   json file.
+# Running config
+#   Server config
+#   Each DB config
+def make_config_tasks(zip_dir, sg_config_path, sg_url):
+
+    collect_config_tasks = []
+
+    # Here are the "usual suspects" to probe for finding the static config
+    sg_config_files = [
+        "/home/sg_accel/sg_accel.json",                                     # linux sg accel
+        "/home/sync_gateway/sync_gateway.json",                             # linux sync gateway
+        "/opt/sync_gateway/etc/sync_gateway.json",                          # amazon linux AMI sync gateway
+        "/opt/sg_accel/etc/sg_accel.json",                                  # amazon linux AMI sg accel
+        "/Users/sync_gateway/sg_accel.json",                                # OSX sg accel
+        "/Users/sync_gateway/sync_gateway.json"                             # OSX sync gateway
+        R'C:\Program Files (x86)\Couchbase\basic_sg_accel_config.json',     # Windows sg accel
+        R'C:\Program Files (x86)\Couchbase\serviceconfig.json'               # Windows sync gateway
+    ]
+    sg_config_files = [ x for x in sg_config_files if os.path.exists(x)]
+
+    # If a config path was discovered from the expvars, or passed in via the user, add that in the
+    # list of files to probe
+    if sg_config_path is not None:
+        sg_config_files.append(sg_config_path)
+
+    # Get static server config
+    for sg_config_file in sg_config_files:
+        task = add_file_task(sourcefile_path=sg_config_file, content_postprocessors=[password_remover.remove_passwords])
+        collect_config_tasks.append(task)
+
+
+    # Get server config
+    server_config_url = "{}/_config".format(sg_url)
+    config_task = make_curl_task(name="Collect server config",
+                                 user="",
+                                 password="",
+                                 url=server_config_url,
+                                 log_file="running_server_config.log",
+                                 content_postprocessors=[password_remover.remove_passwords])
+    collect_config_tasks.append(config_task)
+        
+    # Get list of dbs from _all_dbs
+    # For each db, get db config
+    dbs = get_db_list(sg_url)
+    for db in dbs:
+        db_config_url = "{}/{}/_config".format(sg_url, db)
+        config_task = make_curl_task(name="Collect db config for db: {}".format(db),
+                                     user="",
+                                     password="",
+                                     url=db_config_url,
+                                     log_file="running_db_{}_config.log".format(db),
+                                     content_postprocessors=[password_remover.remove_passwords])
+        collect_config_tasks.append(config_task)
+
+    return collect_config_tasks
+
+
+def get_config_path_from_cmdline(cmdline_args):
+
+    for cmdline_arg in cmdline_args:
+        # if it has .json in the path, assume it's a config file.
+        # ignore any config files that are URL's for now, since
+        # they won't be handled correctly.
+        if ".json" in cmdline_arg and "http" not in cmdline_arg:
+            return cmdline_arg
+    return None
+    
+
+def get_paths_from_expvars(sg_url):
+
+    sg_binary_path = None
+    sg_config_path = None
+    
+    # get content and parse into json
+    response = urllib2.urlopen(expvar_url(sg_url))
+    data = json.load(response)
+    if data is not None and data.has_key("cmdline"):
+        cmdline_args = data["cmdline"]
+        if len(cmdline_args) == 0:
+            return (sg_binary_path, sg_config_path)
+        sg_binary_path = cmdline_args[0]
+        if len(cmdline_args) > 1:
+            try:
+                sg_config_path = get_absolute_path(get_config_path_from_cmdline(cmdline_args[1:]))
+            except Exception as e:
+                print("Exception trying to get absolute sync gateway path from expvars: {0}".format(e))
+                sg_config_path = get_config_path_from_cmdline(cmdline_args[1:])
+
+    return (sg_binary_path, sg_config_path)
+
+
+def get_absolute_path(relative_path):
+    sync_gateway_cwd = ''
+    try:
+        if _platform.startswith("linux"):
+            sync_gateway_pid = subprocess.check_output(['pgrep', 'sync_gateway']).split()[0]
+            sync_gateway_cwd = subprocess.check_output(['readlink', '-e', '/proc/{}/cwd'.format(sync_gateway_pid)]).strip('\n')
+    except subprocess.CalledProcessError:
+        pass
+
+    return os.path.join(sync_gateway_cwd, relative_path)
+
+
+def make_download_expvars_task(sg_url):
+
+    return make_curl_task(
+        name="download_sg_expvars",
+        url=expvar_url(sg_url),
+        log_file="expvars_json.log"
+    )
+
+
+def make_sg_tasks(zip_dir, sg_url, sync_gateway_config_path_option, sync_gateway_executable_path):
+
+    # Get path to sg binary (reliable) and config (not reliable)
+    sg_binary_path, sg_config_path = get_paths_from_expvars(sg_url)
+    print "Discovered from expvars: sg_binary_path={} sg_config_path={}".format(sg_binary_path, sg_config_path)
+
+    # If user passed in a specific path to the SG binary, then use it
+    if sync_gateway_executable_path is not None and len(sync_gateway_executable_path) > 0:
+        if not os.path.exists(sync_gateway_executable_path):
+            raise Exception("Path to sync gateway executable passed in does not exist: {}".format(sync_gateway_executable_path))
+        sg_binary_path = sync_gateway_executable_path
+    
+    # Collect logs
+    collect_logs_tasks = make_collect_logs_tasks(zip_dir, sg_url)
+
+    py_expvar_task = make_download_expvars_task(sg_url)
+
+    # If the user passed in a valid config path, then use that rather than what's in the expvars
+    if sync_gateway_config_path_option is not None and len(sync_gateway_config_path_option) > 0 and os.path.exists(sync_gateway_config_path_option):
+        sg_config_path = sync_gateway_config_path_option
+    
+    # Add a task to collect pprofs
+    go_tool_pprof_tasks = make_collect_gotool_pprof_tasks(zip_dir, sg_binary_path, sg_url)
+
+    http_client_pprof_tasks = make_http_client_pprof_tasks(sg_url)
+
+    # Add a task to collect Sync Gateway config
+    config_tasks = make_config_tasks(zip_dir, sg_config_path, sg_url)
+    
+    # Curl the / endpoint and /db endpoints and save output 
+    status_tasks = make_status_tasks(sg_url)
+    
+    # Compbine all tasks into flattened list
+    sg_tasks = flatten(
+        [
+            collect_logs_tasks,
+            py_expvar_task,
+            http_client_pprof_tasks,
+            go_tool_pprof_tasks,
+            config_tasks,
+            status_tasks,
+        ]
+    )
+    
+    return sg_tasks
+
+def discover_sg_binary_path(options, sg_url):
+
+    sg_bin_dirs = [
+        "/opt/couchbase-sync-gateway/bin/sync_gateway",            # Linux + OSX
+        "/opt/couchbase-sg-accel/bin/sg_accel",                    # Linux + OSX
+        R'C:\Program Files (x86)\Couchbase\sync_gateway.exe',      # Windows
+        R'C:\Program Files (x86)\Couchbase\sg_accel.exe',          # Windows
+    ]
+
+    for sg_binary_path_candidate in sg_bin_dirs:
+        if os.path.exists(sg_binary_path_candidate):
+            return sg_binary_path_candidate
+
+
+    sg_binary_path, _ = get_paths_from_expvars(sg_url)
+
+    if options.sync_gateway_executable is not None and len(options.sync_gateway_executable) > 0:
+        if not os.path.exists(options.sync_gateway_executable):
+            raise Exception(
+                "Path to sync gateway executable passed in does not exist: {}".format(options.sync_gateway_executable))
+        return sg_binary_path
+
+    # fallback to whatever was specified in options
+    return options.sync_gateway_executable
+
+def main():
+
+    # ask all tools to use C locale (MB-12050)
+    os.environ['LANG'] = 'C'
+    os.environ['LC_ALL'] = 'C'
+
+    # Workaround MB-8239: erl script fails in OSX as it is unable to find COUCHBASE_TOP
+    if platform.system() == 'Darwin':
+        os.environ["COUCHBASE_TOP"] = os.path.abspath(os.path.join(mydir, ".."))
+
+    # Parse command line options 
+    parser = create_option_parser()
+    options, args = parser.parse_args()
+
+    # Validate args
+    if len(args) != 1:
+        parser.error("incorrect number of arguments. Expecting filename to collect diagnostics into")
+
+    # Setup stdin watcher if this option was passed
+    if options.watch_stdin:
+        setup_stdin_watcher()
+
+    # Get the sg url the user passed in, or use the default
+    sg_url = options.sync_gateway_url
+    if sg_url is None:
+        sg_url = "http://127.0.0.1:4985"
+    print "Using Sync Gateway URL: {}".format(sg_url)
+    
+    # Build path to zip directory, make sure it exists
+    zip_filename = args[0]
+    if zip_filename[-4:] != '.zip':
+        zip_filename = zip_filename + '.zip'
+    zip_dir = os.path.dirname(os.path.abspath(zip_filename))
+    if not os.access(zip_dir, os.W_OK | os.X_OK):
+        print("do not have write access to the directory %s" % (zip_dir))
+        sys.exit(1)
+
+    # Generate the s3 URL where zip files will be updated
+    upload_url = generate_upload_url(parser, options, zip_filename)
+
+    # Linux
+    if os.name == 'posix':
+
+        path = [
+            mydir,
+            '/opt/couchbase/bin',
+            os.environ['PATH'],
+            '/bin',
+            '/sbin',
+            '/usr/bin',
+            '/usr/sbin'
+        ]
+        os.environ['PATH'] = ':'.join(path)
+
+        library_path = [
+            os.path.join(options.root, 'lib')
+        ]
+
+        current_library_path = os.environ.get('LD_LIBRARY_PATH')
+        if current_library_path is not None:
+            library_path.append(current_library_path)
+
+        os.environ['LD_LIBRARY_PATH'] = ':'.join(library_path)
+
+    # Windows 
+    elif os.name == 'nt':
+
+        path = [
+            mydir,
+            os.environ['PATH']
+        ]
+        os.environ['PATH'] = ';'.join(path)
+
+    # If user asked to just upload, then upload and exit
+    if options.just_upload_into != None:
+        do_upload_and_exit(args[0], options.just_upload_into)
+
+    # Create a TaskRunner and run all of the OS tasks (collect top, netstat, etc)
+    # The output of the tasks will go directly into couchbase.log
+    runner = TaskRunner(verbosity=options.verbosity, default_name="sync_gateway.log")
+
+    if not options.product_only:
+        for task in make_os_tasks(["sync_gateway"]):
+            runner.run(task)
+
+    # Output the Python version if verbosity was enabled
+    if options.verbosity:
+        log("Python version: %s" % sys.version)
+
+    # Find path to sg binary
+    sg_binary_path = discover_sg_binary_path(options, sg_url)
+
+    # Run SG specific tasks
+    for task in make_sg_tasks(zip_dir, sg_url, options.sync_gateway_config, options.sync_gateway_executable):
+        runner.run(task)
+
+    if os.path.exists(sg_binary_path):
+        runner.collect_file(sg_binary_path)
+    else:
+        print "WARNING: unable to find Sync Gateway executable, omitting from result.  Go pprofs will not be accurate."
+
+    # Echo the command line args used to run sgcollect_info
+    cmd_line_args_task = AllOsTask(
+        "Echo sgcollect_info cmd line args",
+        "echo options: {} args: ".format(options, args),
+        log_file="sgcollect_info_options.log",
+    )
+    runner.run(cmd_line_args_task)
+
+    # Build the actual zip file
+    runner.zip(zip_filename, 'sgcollect_info', platform.node())
+
+    # Clean up intermediate pprof files
+    shutil.rmtree(os.environ["PPROF_TMPDIR"], ignore_errors=True)
+
+    # Upload the zip to the URL to S3 if required
+    if upload_url:
+        do_upload_and_exit(zip_filename, upload_url)
+
+    print "Zipfile built: {}".format(zip_filename)
+
+if __name__ == '__main__':
+    main()
