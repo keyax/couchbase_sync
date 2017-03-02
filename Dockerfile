@@ -16,16 +16,19 @@ LABEL keyax.app.ver "2.1"
 # delete 27MB all the apt list files since they're big and get stale quickly
 ##     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 # this forces "apt-get update" in dependent images, which is also good
+
 # RUN groupadd -r nodejs && useradd -r -g nodejs nodejs --create-home nodejs
-RUN groupadd --gid 1000 node \
-  && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
-  ADD ./scripto  /home/repo/
-  # RUN cd /home/repo
-  WORKDIR /home/repo
+# RUN groupadd --gid 1000 node \
+#  && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 
-RUN su node && \
-      cd /home/repo
+RUN useradd --system -s /sbin/nologin syncuser
+USER syncuser
 
+# RUN su node && cd /home/repo
+
+ADD ./scripto  /home/repo/
+# RUN cd /home/repo
+WORKDIR /home/repo
 
 ENV NGINX_VERSION 1.10.3-1~trusty
 
