@@ -49,6 +49,10 @@ COPY ./sites_available /etc/nginx/
 
 ADD ./scripto  /home/repo/
 WORKDIR /home/repo
+ENV GOROOT /usr/local/go
+ENV GOPATH /home/repo
+
+
 RUN apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
           git \
@@ -56,11 +60,9 @@ RUN apt-get update && \
     wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz && \
     tar -xvf go1.8.linux-amd64.tar.gz && \
     mv ./go /usr/local/ && \
-    echo export GOROOT=/usr/local/go > ~/.profile && \
-    echo export GOPATH=/home/repo > ~/.profile && cat ~/.profile && \
-    echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH > ~/.profile && cat ~/.profile && \
-    export GOROOT=/usr/local/go && \
-    export GOPATH=/home/repo && \
+    echo export GOROOT=/usr/local/go >> ~/.profile && \
+    echo export GOPATH=/home/repo >> ~/.profile && \
+    echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH >> ~/.profile && cat ~/.profile && \
     PATH=${GOROOT}/bin:${GOPATH}/bin:$PATH && \
     go version && \
     go env
