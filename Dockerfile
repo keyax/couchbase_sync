@@ -26,7 +26,7 @@ RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 573BFD6B3D8FBC64107
 	&& apt-get update \
 	&& apt-get install --no-install-recommends --no-install-suggests -y \
             git \
-            gcc \
+            build-essential \
             ca-certificates \
 						nginx=${NGINX_VERSION} \
 						nginx-module-xslt \
