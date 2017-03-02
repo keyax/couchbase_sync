@@ -59,8 +59,13 @@ WORKDIR /home/repo
 ENV GOPATH /home/repo
 ENV GOROOT /usr/local/go
 ENV PATH ${GOPATH}/bin:${GOROOT}/bin:$PATH
+
+RUN useradd --system -s /sbin/nologin syncuser
+USER syncuser
+RUN su syncuser && cd /home/repo && \
+
 # RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && apt-get install **Package** && rm -f /usr/sbin/policy-rc.d
-RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && \
+#RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && \
     apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
               build-essential make cmake scons git \
@@ -82,10 +87,6 @@ RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-r
 #              git clone init && \
 #              go get -u -t git@github.com:couchbase/sync-gateway.git && ls
 # Building from Source
-
-# RUN useradd --system -s /sbin/nologin syncuser
-# USER syncuser
-# RUN su node && cd /home/repo
 
 RUN brew install repo && \
     mkdir ~/sync_gateway; cd ~/sync_gateway && \
