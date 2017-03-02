@@ -51,6 +51,7 @@ ADD ./scripto  /home/repo/
 WORKDIR /home/repo
 ENV GOROOT /usr/local/go
 ENV GOPATH /home/repo
+ENV PATH ${GOROOT}/bin:${GOPATH}/bin:$PATH && \
 
 
 RUN apt-get update && \
@@ -63,7 +64,6 @@ RUN apt-get update && \
     echo export GOROOT=/usr/local/go >> ~/.profile && \
     echo export GOPATH=/home/repo >> ~/.profile && \
     echo PATH=$GOROOT/bin:$GOPATH/bin:$PATH >> ~/.profile && cat ~/.profile && \
-    PATH=${GOROOT}/bin:${GOPATH}/bin:$PATH && \
     go version && go env && \
     git init && \
     git remote set-url origin git@github.com:couchbase/sync-gateway.git && \
