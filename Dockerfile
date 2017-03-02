@@ -80,8 +80,8 @@ RUN apt-get update && \
 #              go get -u -t git@github.com:couchbase/sync-gateway.git && ls
 # Building from Source
 
-RUN useradd --system -s /sbin/nologin syncuser
-USER syncuser
+# RUN useradd --system -s /sbin/nologin syncuser
+# USER syncuser
 # RUN su node && cd /home/repo
 
 RUN brew install repo && \
