@@ -8,6 +8,19 @@ LABEL keyax.vendor "Keyax"
 LABEL keyax.app "Sync Gateway 1.3.1 for Couchbase 4.5.0"
 LABEL keyax.app.ver "2.1"
 
+RUN apt-get update && \
+    apt-get install -yq \
+       runit \
+#       wget \
+#       python-httplib2 \
+       chrpath \
+       lsof lshw \
+# disable transparent hugepages databases couchbase in Ubuntu
+       sysfsutils \
+       sysstat net-tools \
+       numactl \
+    && apt-get autoremove && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Create Couchbase user with UID 1000 (necessary to match default boot2docker UID)
 RUN groupadd -g 1000 couchbase && useradd couchbase -u 1000 -g couchbase -M
@@ -31,8 +44,8 @@ RUN wget -N $CB_RELEASE_URL/$CB_VERSION/$CB_PACKAGE && \
 COPY ./couchbase-sync-gateway-community_1.3.1-16_x86_64.deb  /
 RUN set -xe && dpkg --unpack /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
 # && dpkg --triggers-only couchbase-sync-gateway \
- && dpkg --configure couchbase-sync-gateway \
  && service sync_gateway start \
+ && dpkg --configure couchbase-sync-gateway \
  && rm /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
 # Create directory where the default config stores memory snapshots to disk
 RUN mkdir -p /opt/couchbase-sync-gateway/data
