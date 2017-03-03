@@ -77,7 +77,7 @@ RUN su node && \
 RUN apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
               build-essential make cmake scons git \
-              ruby autoconf automake autoconf-archive
+              ruby autoconf automake autoconf-archive \
 #              gettext libtool flex bison \
 #              libbz2-dev libcurl4-openssl-dev \
 #              libexpat-dev libncurses-dev && \
