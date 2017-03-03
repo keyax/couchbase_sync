@@ -40,8 +40,8 @@ RUN wget -N $CB_RELEASE_URL/$CB_VERSION/$CB_PACKAGE && \
 #    sync_gateway: unrecognized service
 #    dpkg: error processing package couchbase-sync-gateway (--install):
 # RUN cd /var/lib/dpkg \
-RUN wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-enterprise_1.3.1-16_x86_64.deb \
- && dpkg -i couchbase-sync-gateway-enterprise_1.3.1-16_x86_64.deb
+RUN wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.1.1/couchbase-sync-gateway-enterprise_1.1.1-10_x86_64.deb \
+ && dpkg -i couchbase-sync-gateway-enterprise_1.1.1-10_x86_64.deb
 ### RUN touch /var/cache/apt/archives/available
 # RUN touch /var/lib/dpkg/available
 ### COPY ./couchbase-sync-gateway-community_1.3.1-16_x86_64.deb  /var/cache/apt/archives/
