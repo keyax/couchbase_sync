@@ -41,12 +41,12 @@ RUN wget -N $CB_RELEASE_URL/$CB_VERSION/$CB_PACKAGE && \
 #    dpkg: error processing package couchbase-sync-gateway (--install):
 # RUN cd /var/lib/dpkg \
 # && wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
-COPY ./couchbase-sync-gateway-community_1.3.1-16_x86_64.deb  /
-RUN set -xe && dpkg --unpack /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
+COPY ./couchbase-sync-gateway-community_1.3.1-16_x86_64.deb  /var/lib/dpkg
+RUN set -xe && apt-get couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
 # && dpkg --triggers-only couchbase-sync-gateway \
- && service sync_gateway start \
- && dpkg --configure couchbase-sync-gateway \
- && rm /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
+# && service sync_gateway start \
+# && dpkg --configure couchbase-sync-gateway \
+# && rm /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
 # Create directory where the default config stores memory snapshots to disk
 RUN mkdir -p /opt/couchbase-sync-gateway/data
 
