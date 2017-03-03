@@ -9,13 +9,6 @@ LABEL keyax.app "Sync Gateway 1.3.1 for Couchbase 4.5.0"
 LABEL keyax.app.ver "2.1"
 
 ## RUN apt-get update && apt-get install --assume-yes --no-install-recommends nginx && \
-# remove packages installed by other packages and no longer needed purge configs
-##     apt-get autoremove --purge --assume-yes && \
-#   remove the aptitude cache in /var/cache/apt/archives frees 0MB
-##     apt-get clean && \
-# delete 27MB all the apt list files since they're big and get stale quickly
-##     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-# this forces "apt-get update" in dependent images, which is also good
 
 # RUN groupadd -r nodejs && useradd -r -g nodejs nodejs --create-home nodejs
 # RUN groupadd --gid 1000 node \
@@ -40,7 +33,13 @@ RUN echo "deb http://nginx.org/packages/ubuntu/ trusty nginx" >> /etc/apt/source
 						nginx-module-perl \
 						nginx-module-njs \
 						gettext-base \
-	&& rm -rf /var/lib/apt/lists/*
+# remove packages installed by other packages and no longer needed purge configs
+      && apt-get autoremove --purge --assume-yes \
+#   remove the aptitude cache in /var/cache/apt/archives frees 0MB
+      && apt-get clean \
+# delete 27MB all the apt list files since they're big and get stale quickly
+      && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# this forces "apt-get update" in dependent images, which is also good
 
 # forward request and error logs to docker log collector
 RUN mkdir -p /var/log/nginx && \
@@ -74,13 +73,17 @@ RUN su node && \
 
 # RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && apt-get install **Package** && rm -f /usr/sbin/policy-rc.d
 #RUN echo -e '#!/bin/sh\nexit 101' | install -m 755 /dev/stdin /usr/sbin/policy-rc.d && \
+wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.2.1/couchbase-sync-gateway-community_1.2.1-4_x86_64.deb
+sudo dpkg -i couchbase-sync-gateway couchbase-sync-gateway-community_1.2.1-4_x86_64.deb
+
+
 RUN apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
               build-essential make cmake scons git \
-              ruby autoconf automake autoconf-archive \
-#              gettext libtool flex bison \
-#              libbz2-dev libcurl4-openssl-dev \
-#              libexpat-dev libncurses-dev && \
+#              ruby autoconf automake autoconf-archive \
+              gettext libtool flex bison \
+              libbz2-dev libcurl4-openssl-dev \
+              libexpat-dev libncurses-dev \
           &&  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
               PATH="$HOME/.linuxbrew/bin:$PATH"
               echo 'export PATH="$HOME/.linuxbrew/bin:$PATH"' >>~/.bash_profile
