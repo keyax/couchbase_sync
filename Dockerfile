@@ -64,7 +64,7 @@ RUN wget -N $CB_RELEASE_URL/$CB_VERSION/$CB_PACKAGE && \
 # RUN cd /var/lib/dpkg \
 # && wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
 COPY ./couchbase-sync-gateway-community_1.3.1-16_x86_64.deb  /
-RUN dpkg -i /couchbase-sync-gateway couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
+RUN dpkg -i /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
  && rm /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
 # Create directory where the default config stores memory snapshots to disk
 RUN mkdir -p /opt/couchbase-sync-gateway/data
