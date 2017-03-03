@@ -8,6 +8,43 @@ LABEL keyax.vendor "Keyax"
 LABEL keyax.app "Sync Gateway 1.3.1 for Couchbase 4.5.0"
 LABEL keyax.app.ver "2.1"
 
+
+# Create Couchbase user with UID 1000 (necessary to match default boot2docker UID)
+RUN groupadd -g 1000 couchbase && useradd couchbase -u 1000 -g couchbase -M
+
+ENV CB_VERSION="4.5.0" \
+    CB_RELEASE_URL="http://packages.couchbase.com/releases" \
+    CB_PACKAGE="couchbase-server-community_4.5.0-ubuntu14.04_amd64.deb" \
+    CB_SHA256="7682b2c90717ba790b729341e32ce5a43f7eacb5279f48f47aae165c0ec3a633" \
+    PATH=$PATH:/opt/couchbase/bin:/opt/couchbase/bin/tools:/opt/couchbase/bin/install \
+    LD_LIBRARY_PATH=":/opt/couchbase/lib"
+
+# Install couchbase
+RUN wget -N $CB_RELEASE_URL/$CB_VERSION/$CB_PACKAGE && \
+    echo "$CB_SHA256  $CB_PACKAGE" | sha256sum -c - && \
+    dpkg -i ./$CB_PACKAGE && rm -f ./$CB_PACKAGE
+
+#    sync_gateway: unrecognized service
+#    dpkg: error processing package couchbase-sync-gateway (--install):
+# RUN cd /var/lib/dpkg \
+# && wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
+COPY ./couchbase-sync-gateway-community_1.3.1-16_x86_64.deb  /
+RUN set -xe && dpkg --unpack /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
+# && dpkg --triggers-only couchbase-sync-gateway \
+ && dpkg --configure couchbase-sync-gateway \
+ && service sync_gateway start \
+ && rm /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
+# Create directory where the default config stores memory snapshots to disk
+RUN mkdir -p /opt/couchbase-sync-gateway/data
+
+# configure
+ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
+## RUN ls
+
+# copy the default config into the container
+COPY sync_gateway_config.json /etc/sync_gateway/config.json
+
+
 ENV NGINX_VERSION 1.10.3-1~trusty
 
 # gpg: requesting key 7BD9BF62 from hkp server pgp.mit.edu : gpg: no writable keyring found: eof
@@ -44,40 +81,7 @@ COPY ./sites_available /etc/nginx/
 ## RUN nginx -g daemon off
 ## CMD ["nginx", "-g", "daemon off;"]
 
-# Create Couchbase user with UID 1000 (necessary to match default boot2docker UID)
-RUN groupadd -g 1000 couchbase && useradd couchbase -u 1000 -g couchbase -M
 
-ENV CB_VERSION="4.5.0" \
-    CB_RELEASE_URL="http://packages.couchbase.com/releases" \
-    CB_PACKAGE="couchbase-server-community_4.5.0-ubuntu14.04_amd64.deb" \
-    CB_SHA256="7682b2c90717ba790b729341e32ce5a43f7eacb5279f48f47aae165c0ec3a633" \
-    PATH=$PATH:/opt/couchbase/bin:/opt/couchbase/bin/tools:/opt/couchbase/bin/install \
-    LD_LIBRARY_PATH=":/opt/couchbase/lib"
-
-# Install couchbase
-RUN wget -N $CB_RELEASE_URL/$CB_VERSION/$CB_PACKAGE && \
-    echo "$CB_SHA256  $CB_PACKAGE" | sha256sum -c - && \
-    dpkg -i ./$CB_PACKAGE && rm -f ./$CB_PACKAGE
-
-#    sync_gateway: unrecognized service
-#    dpkg: error processing package couchbase-sync-gateway (--install):
-# RUN cd /var/lib/dpkg \
-# && wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
-COPY ./couchbase-sync-gateway-community_1.3.1-16_x86_64.deb  /
-RUN set -xe && dpkg --unpack /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
-# && dpkg --triggers-only couchbase-sync-gateway \
- && dpkg --configure couchbase-sync-gateway \
- && service sync_gateway start \
- && rm /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
-# Create directory where the default config stores memory snapshots to disk
-RUN mkdir -p /opt/couchbase-sync-gateway/data
-
-# configure
-ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
-## RUN ls
-
-# copy the default config into the container
-COPY sync_gateway_config.json /etc/sync_gateway/config.json
 
 # Invoke the sync_gateway executable by default
 ENTRYPOINT ["sync_gateway"]
