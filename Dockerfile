@@ -41,10 +41,11 @@ RUN wget -N $CB_RELEASE_URL/$CB_VERSION/$CB_PACKAGE && \
 #    dpkg: error processing package couchbase-sync-gateway (--install):
 # RUN cd /var/lib/dpkg \
 # && wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.deb \
-RUN touch /var/lib/dpkg/available
-COPY ./couchbase-sync-gateway-community_1.3.1-16_x86_64.deb  /var/lib/dpkg
-RUN for i in /var/lib/apt/lists/*_Packages; do dpkg --merge-avail "$i"; done
- && set -xe && apt-get couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
+RUN touch /var/cache/apt/archives/available
+# RUN touch /var/lib/dpkg/available
+COPY ./couchbase-sync-gateway-community_1.3.1-16_x86_64.deb  /var/cache/apt/archives/
+# RUN for i in /var/lib/apt/lists/*_Packages; do dpkg --merge-avail "$i"; done
+RUN apt-get couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
 # && dpkg --triggers-only couchbase-sync-gateway \
 # && service sync_gateway start \
 # && dpkg --configure couchbase-sync-gateway \
