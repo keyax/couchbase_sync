@@ -25,14 +25,13 @@ RUN wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.1.1/cou
 # && rm /couchbase-sync-gateway-community_1.3.1-16_x86_64.deb
 # Create directory where the default config stores memory snapshots to disk
 RUN mkdir -p /opt/couchbase-sync-gateway/data
-
 # configure
-ENV PATH /opt/couchbase-sync-gateway/bin:$PATH
-## RUN ls
+ENV PATH $PATH:/opt/couchbase-sync-gateway/bin
 
 # copy the default config into the container
 COPY sync_gateway_config.json /etc/sync_gateway/config.json
-
+RUN mkdir -p /home/sync_gateway
+VOLUME /etc/sync_gateway
 # Invoke the sync_gateway executable by default
 ENTRYPOINT ["sync_gateway"]
 

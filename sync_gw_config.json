@@ -1,5 +1,4 @@
 // couchbase connect 2014
-
 {
   "log": [
     "CRUD+",
@@ -28,7 +27,7 @@
             // Issuing user must be the local user.
             requireUser(doc.localUserId);
 
-        } else if (doc.type == "surveyresult") { 
+        } else if (doc.type == "surveyresult") {
             // Can't modify a conference survey document.
             if (oldDoc != null) throw({forbidden: "Can't modify a conference survey document."});
             // Extract the userId from the document _id (the format of _id is "surveyresult-USER-ID").
