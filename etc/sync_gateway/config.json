@@ -1,0 +1,29 @@
+{
+	"log": ["HTTP+", "CRUD+", "REST+", "Changes+", "Attach+"],
+	"interface": ":4984",
+	"adminInterface": ":4985",
+	"pretty": true,
+	"databases": {
+		"db": {
+			"server": "walrus:/opt/couchbase-sync-gateway/data",
+			"users": {
+				"GUEST": {"disabled": false, "admin_channels": ["*"] }
+			}
+		}
+
+		"mydb": {
+      "server": "http://localhost:8091",
+      "bucket": "default",
+      "users": {
+        "GUEST": {"disabled": false }
+      },
+      "sync":
+        `function(doc, oldDoc) {
+          channel(doc.channels);
+      }`
+    }
+
+
+
+	}
+}
